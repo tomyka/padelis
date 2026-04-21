@@ -1,44 +1,11 @@
 <template>
   <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
 
-    <!-- Site header / brand -->
-    <header class="mb-6 flex items-center gap-3">
-      <!-- Padel racket SVG icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" class="h-10 w-8 shrink-0" aria-hidden="true">
-        <!-- Racket head frame -->
-        <ellipse cx="32" cy="28" rx="22" ry="24" fill="#16a34a" />
-        <!-- Racket face (lighter inner) -->
-        <ellipse cx="32" cy="28" rx="17" ry="19" fill="#22c55e" />
-        <!-- Perforations — 3 rows of holes -->
-        <circle cx="26" cy="22" r="2.2" fill="#16a34a" />
-        <circle cx="32" cy="22" r="2.2" fill="#16a34a" />
-        <circle cx="38" cy="22" r="2.2" fill="#16a34a" />
-        <circle cx="23" cy="29" r="2.2" fill="#16a34a" />
-        <circle cx="30" cy="29" r="2.2" fill="#16a34a" />
-        <circle cx="37" cy="29" r="2.2" fill="#16a34a" />
-        <circle cx="26" cy="36" r="2.2" fill="#16a34a" />
-        <circle cx="32" cy="36" r="2.2" fill="#16a34a" />
-        <circle cx="38" cy="36" r="2.2" fill="#16a34a" />
-        <!-- Throat -->
-        <path d="M26 50 Q32 44 38 50 L36 52 Q32 47 28 52 Z" fill="#15803d" />
-        <!-- Handle -->
-        <rect x="28" y="50" width="8" height="24" rx="4" fill="#15803d" />
-        <!-- Grip wrap lines -->
-        <line x1="28" y1="57" x2="36" y2="57" stroke="#bbf7d0" stroke-width="1.2" stroke-linecap="round" />
-        <line x1="28" y1="62" x2="36" y2="62" stroke="#bbf7d0" stroke-width="1.2" stroke-linecap="round" />
-        <line x1="28" y1="67" x2="36" y2="67" stroke="#bbf7d0" stroke-width="1.2" stroke-linecap="round" />
-      </svg>
-      <div>
-        <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">Žaisk Padelį</h1>
-        <p class="text-xs text-gray-500 sm:text-sm">Laisvos aikštelės visoje Lietuvoje</p>
-      </div>
-    </header>
-
     <!-- Top bar: date + filters -->
     <div class="mb-5 flex flex-col gap-3">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 class="text-base font-semibold text-gray-700 sm:text-lg">Laisvos aikštelės</h2>
+          <h2 class="text-xl font-bold text-gray-900 sm:text-2xl">Laisvos aikštelės</h2>
           <p class="mt-0.5 text-sm text-gray-500">Padelio kortai vienoje vietoje</p>
         </div>
         <!-- Date picker -->
