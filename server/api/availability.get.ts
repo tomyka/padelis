@@ -1,18 +1,12 @@
-import { scrapePadelHub } from '../utils/scraper-padelhub'
-import { scrapePadelHouse } from '../utils/scraper-padelhouse'
-import { scrapeTennisSpace } from '../utils/scraper-tennisspace'
-import { scrapeKaunoPadelis } from '../utils/scraper-kaunopadelis'
-import { scrapeVilniusPadel } from '../utils/scraper-vilniuspadel'
-import { scrapeA1Padel } from '../utils/scraper-a1padel'
-import { scrapeWineroArena, WINERO_VENUES } from '../utils/scraper-winero'
-import { getCached, setCached, getInflight, setInflight, cacheAgeSeconds } from '../utils/cache'
+import { getCached, setCached, getInflight, setInflight } from '../utils/cache'
+import { scrapeAllVenues } from '../utils/scraper-all'
 import type { AvailabilityResponse } from '../utils/types'
 
 export default defineEventHandler(async (event): Promise<AvailabilityResponse> => {
   const query = getQuery(event)
   const date = (query.date as string) || new Date().toISOString().split('T')[0]
 
-  // Strict date validation: format + calendar sanity (no 9999-99-99 etc.)
+  // Strict date validation: format + calendar sanity
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     throw createError({ statusCode: 400, message: 'Invalid date format. Use YYYY-MM-DD' })
   }
@@ -21,36 +15,38 @@ export default defineEventHandler(async (event): Promise<AvailabilityResponse> =
     throw createError({ statusCode: 400, message: 'Date out of range' })
   }
 
-  // Serve from cache if fresh
-  const cached = getCached(date)
-  if (cached) {
-    return { ...cached, fromCache: true, cacheAgeSeconds: cacheAgeSeconds(date) }
+  // 1. Serve from KV cache if fresh
+  const cached = await getCached(date)
+  if (cached && !cached.stale) {
+    return { ...cached.data, fromCache: true, cacheAgeSeconds: cached.ageSeconds }
   }
 
-  // Deduplicate concurrent requests for same date
+  // 2. Deduplicate concurrent requests
   const existing = getInflight(date)
   if (existing) return existing
 
+  // 3. Scrape fresh data (stale data available as fallback)
   const promise = (async (): Promise<AvailabilityResponse> => {
-    const [padelhub, padelhouse, tennisspace, kaunopadelis, vilniuspadel, a1padel, ...wineroVenues] = await Promise.all([
-      scrapePadelHub(date),
-      scrapePadelHouse(date),
-      scrapeTennisSpace(date),
-      scrapeKaunoPadelis(date),
-      scrapeVilniusPadel(date),
-      scrapeA1Padel(date),
-      ...WINERO_VENUES.map(cfg => scrapeWineroArena(cfg, date)),
-    ])
+    try {
+      const venues = await scrapeAllVenues(date)
 
-    const result: AvailabilityResponse = {
-      date,
-      venues: [padelhub, padelhouse, tennisspace, kaunopadelis, vilniuspadel, a1padel, ...wineroVenues],
-      fetchedAt: new Date().toISOString(),
-      fromCache: false,
-      cacheAgeSeconds: 0,
+      const result: AvailabilityResponse = {
+        date,
+        venues,
+        fetchedAt: new Date().toISOString(),
+        fromCache: false,
+        cacheAgeSeconds: 0,
+      }
+      await setCached(date, result)
+      return result
+    } catch (e) {
+      // If scraping fails entirely, serve stale data if available
+      if (cached) {
+        console.warn(`[availability] Scrape failed, serving stale data (${cached.ageSeconds}s old):`, (e as Error).message)
+        return { ...cached.data, fromCache: true, cacheAgeSeconds: cached.ageSeconds }
+      }
+      throw e
     }
-    setCached(date, result)
-    return result
   })()
 
   setInflight(date, promise)
