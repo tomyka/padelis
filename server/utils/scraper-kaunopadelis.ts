@@ -174,7 +174,7 @@ export async function scrapeKaunoPadelis(date: string): Promise<Venue> {
       }
     })
   } catch (err: any) {
-    venue.error = err?.message || 'Failed to fetch Kauno Padelio Klubas data'
+    venue.error = 'Failed to fetch Kauno Padelio Klubas data'
   }
 
   return venue

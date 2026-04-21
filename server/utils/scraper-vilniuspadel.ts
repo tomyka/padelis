@@ -175,7 +175,7 @@ export async function scrapeVilniusPadel(date: string): Promise<Venue> {
       }
     })
   } catch (err: any) {
-    venue.error = err?.message || 'Failed to fetch Vilnius Padel Arena data'
+    venue.error = 'Failed to fetch Vilnius Padel Arena data'
   }
 
   return venue

@@ -56,7 +56,7 @@ export async function scrapePadelHub(date: string): Promise<Venue> {
       })
     }
   } catch (err: any) {
-    venue.error = err?.message || 'Failed to fetch Padel Hub data'
+    venue.error = 'Failed to fetch Padel Hub data'
   }
 
   return venue

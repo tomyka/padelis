@@ -183,7 +183,7 @@ export async function scrapeTennisSpace(date: string): Promise<Venue> {
       }
     })
   } catch (err: any) {
-    venue.error = err?.message || 'Failed to fetch Tennis Space data'
+    venue.error = 'Failed to fetch Tennis Space data'
   }
 
   return venue

@@ -11,8 +11,13 @@ export default defineEventHandler(async (event): Promise<AvailabilityResponse> =
   const query = getQuery(event)
   const date = (query.date as string) || new Date().toISOString().split('T')[0]
 
+  // Strict date validation: format + calendar sanity (no 9999-99-99 etc.)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     throw createError({ statusCode: 400, message: 'Invalid date format. Use YYYY-MM-DD' })
+  }
+  const parsed = new Date(date + 'T12:00:00')
+  if (isNaN(parsed.getTime()) || parsed.getFullYear() < 2024 || parsed.getFullYear() > 2030) {
+    throw createError({ statusCode: 400, message: 'Date out of range' })
   }
 
   // Serve from cache if fresh

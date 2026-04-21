@@ -102,7 +102,7 @@ export async function scrapePadelHouse(date: string): Promise<Venue> {
       courtIdx++
     }
   } catch (err: any) {
-    venue.error = err?.message || 'Failed to fetch Padel House data'
+    venue.error = 'Failed to fetch Padel House data'
   }
 
   return venue

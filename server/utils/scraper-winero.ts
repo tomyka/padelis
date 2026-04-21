@@ -167,7 +167,7 @@ export async function scrapeWineroArena(config: WineroArenaConfig, date: string)
       })
     }
   } catch (err: any) {
-    venue.error = err?.message || `Failed to fetch ${config.name} data`
+    venue.error = `Failed to fetch ${config.name} data`
   }
 
   return venue

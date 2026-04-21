@@ -1,6 +1,7 @@
 import type { AvailabilityResponse } from './types'
 
 const CACHE_TTL_MS = 10 * 60 * 1000 // 10 minutes
+const MAX_CACHE_ENTRIES = 30          // ~30 unique dates max
 
 interface CacheEntry {
   data: AvailabilityResponse
@@ -13,6 +14,19 @@ const cache = new Map<string, CacheEntry>()
 // In-flight requests — prevents multiple simultaneous scrapes for the same date
 const inflight = new Map<string, Promise<AvailabilityResponse>>()
 
+/** Evict all expired entries; if still over limit, drop oldest */
+function evict(): void {
+  const now = Date.now()
+  for (const [key, entry] of cache) {
+    if (now > entry.expiresAt) cache.delete(key)
+  }
+  // Hard cap: drop entries with soonest expiry first
+  while (cache.size > MAX_CACHE_ENTRIES) {
+    const oldest = [...cache.entries()].sort((a, b) => a[1].expiresAt - b[1].expiresAt)[0]
+    if (oldest) cache.delete(oldest[0])
+  }
+}
+
 export function getCached(date: string): AvailabilityResponse | null {
   const entry = cache.get(date)
   if (!entry) return null
@@ -24,6 +38,7 @@ export function getCached(date: string): AvailabilityResponse | null {
 }
 
 export function setCached(date: string, data: AvailabilityResponse): void {
+  evict()
   cache.set(date, { data, expiresAt: Date.now() + CACHE_TTL_MS })
 }
 
