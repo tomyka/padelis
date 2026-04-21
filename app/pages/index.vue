@@ -393,10 +393,13 @@ function detectCity() {
 
 function venueStyle(id: string) {
   const styles: Record<string, { emoji: string; iconBg: string; headerBg: string; activePill: string }> = {
-    padelhub:     { emoji: '🏟️', iconBg: 'bg-blue-50',    headerBg: 'bg-blue-50/50 border-b border-blue-100',    activePill: 'border-blue-400 bg-blue-50 text-blue-700' },
-    padelhouse:   { emoji: '🏠', iconBg: 'bg-orange-50',  headerBg: 'bg-orange-50/50 border-b border-orange-100',  activePill: 'border-orange-400 bg-orange-50 text-orange-700' },
-    tennisspace:  { emoji: '🎾', iconBg: 'bg-green-50',   headerBg: 'bg-green-50/50 border-b border-green-100',   activePill: 'border-green-400 bg-green-50 text-green-700' },
-    kaunopadelis: { emoji: '🏆', iconBg: 'bg-yellow-50',  headerBg: 'bg-yellow-50/50 border-b border-yellow-100', activePill: 'border-yellow-400 bg-yellow-50 text-yellow-700' },
+    padelhub:     { emoji: '🏟️', iconBg: 'bg-blue-50',    headerBg: 'bg-blue-50/50 border-b border-blue-100',       activePill: 'border-blue-400 bg-blue-50 text-blue-700' },
+    padelhouse:   { emoji: '🏠', iconBg: 'bg-orange-50',  headerBg: 'bg-orange-50/50 border-b border-orange-100',   activePill: 'border-orange-400 bg-orange-50 text-orange-700' },
+    tennisspace:  { emoji: '🎾', iconBg: 'bg-green-50',   headerBg: 'bg-green-50/50 border-b border-green-100',     activePill: 'border-green-400 bg-green-50 text-green-700' },
+    kaunopadelis: { emoji: '🏆', iconBg: 'bg-yellow-50',  headerBg: 'bg-yellow-50/50 border-b border-yellow-100',   activePill: 'border-yellow-400 bg-yellow-50 text-yellow-700' },
+    vilniuspadel: { emoji: '⭐', iconBg: 'bg-violet-50',  headerBg: 'bg-violet-50/50 border-b border-violet-100',   activePill: 'border-violet-400 bg-violet-50 text-violet-700' },
+    zirmunai:     { emoji: '🌿', iconBg: 'bg-teal-50',    headerBg: 'bg-teal-50/50 border-b border-teal-100',       activePill: 'border-teal-400 bg-teal-50 text-teal-700' },
+    padelfactory: { emoji: '🏭', iconBg: 'bg-rose-50',    headerBg: 'bg-rose-50/50 border-b border-rose-100',       activePill: 'border-rose-400 bg-rose-50 text-rose-700' },
   }
   return styles[id] || { emoji: '📍', iconBg: 'bg-gray-100', headerBg: 'bg-gray-50 border-b border-gray-100', activePill: 'border-gray-400 bg-gray-50 text-gray-700' }
 }
@@ -406,5 +409,5 @@ function formatTime(iso: string) {
   catch { return iso }
 }
 
-useHead({ title: 'Padel Kaunas — Laisvos aikštelės' })
+useHead({ title: 'Zaisk Padeli — Laisvos aikštelės' })
 </script>
