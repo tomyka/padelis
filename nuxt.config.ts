@@ -14,7 +14,7 @@ export default defineNuxtConfig({
       meta: [
         { name: 'description', content: 'Visos Lietuvos padelio aikštelių užimtumas vienoje vietoje' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'theme-color', content: '#0f172a' },
+        { name: 'theme-color', content: '#059669' },
         { 'http-equiv': 'X-Content-Type-Options', content: 'nosniff' },
       ],
       link: [
@@ -29,8 +29,8 @@ export default defineNuxtConfig({
       name: 'Žaisk Padelį',
       short_name: 'Žaisk Padelį',
       description: 'Lietuvos padelio aikštelių užimtumas',
-      theme_color: '#0f172a',
-      background_color: '#0f172a',
+      theme_color: '#059669',
+      background_color: '#f9fafb',
       display: 'standalone',
       icons: [
         { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
