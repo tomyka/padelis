@@ -56,5 +56,8 @@ export default defineNuxtConfig({
         },
       },
     },
+    vercel: {
+      regions: ['arn1'],
+    },
   },
 })

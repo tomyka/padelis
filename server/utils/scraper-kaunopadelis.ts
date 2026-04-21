@@ -1,5 +1,6 @@
 import { load } from 'cheerio'
 import type { Venue, Court, TimeSlot } from './types'
+import { extractSetCookies, mergeCookies } from './cookies'
 
 /**
  * Kauno Padelio Klubas — nTennis/nSoft platform (same as Tennis Space)
@@ -8,35 +9,6 @@ import type { Venue, Court, TimeSlot } from './types'
 
 const BASE_URL = 'https://savitarna.kaunopadelis.lt'
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-
-function extractSetCookies(headers: Headers): string[] {
-  const cookies: string[] = []
-  const raw = (headers as any).getSetCookie?.() ?? []
-  for (const c of raw) {
-    const part = c.split(';')[0]
-    if (part) cookies.push(part)
-  }
-  if (cookies.length === 0) {
-    const raw2 = headers.get('set-cookie')
-    if (raw2) {
-      for (const c of raw2.split(/,(?=\s*\w+=)/)) {
-        const part = c.split(';')[0].trim()
-        if (part) cookies.push(part)
-      }
-    }
-  }
-  return cookies
-}
-
-function mergeCookies(existing: string[], incoming: string[]): string[] {
-  const map = new Map<string, string>()
-  for (const c of [...existing, ...incoming]) {
-    const eq = c.indexOf('=')
-    const key = eq > 0 ? c.slice(0, eq) : c
-    map.set(key, c)
-  }
-  return Array.from(map.values())
-}
 
 export async function scrapeKaunoPadelis(date: string): Promise<Venue> {
   const venue: Venue = {
@@ -79,6 +51,8 @@ export async function scrapeKaunoPadelis(date: string): Promise<Venue> {
       headers: {
         'User-Agent': UA,
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'lt,en;q=0.5',
         'Cookie': cookies.join('; '),
         'Referer': `${BASE_URL}/user/login`,
       },
@@ -87,11 +61,17 @@ export async function scrapeKaunoPadelis(date: string): Promise<Venue> {
     })
     cookies = mergeCookies(cookies, extractSetCookies(postResp.headers))
 
+    // If POST returns 200, login likely failed (successful login returns 302)
+    if (postResp.status === 200) {
+      venue.error = `Login POST returned ${postResp.status} — credentials may be rejected`
+      return venue
+    }
+
     const location = postResp.headers.get('location')
     if (location) {
       const redirectUrl = location.startsWith('http') ? location : `${BASE_URL}${location}`
       const redirectResp = await fetch(redirectUrl, {
-        headers: { 'User-Agent': UA, 'Cookie': cookies.join('; ') },
+        headers: { 'User-Agent': UA, 'Accept': 'text/html', 'Cookie': cookies.join('; ') },
         redirect: 'manual',
       })
       cookies = mergeCookies(cookies, extractSetCookies(redirectResp.headers))
@@ -100,12 +80,33 @@ export async function scrapeKaunoPadelis(date: string): Promise<Venue> {
     // Step 3: GET reservation grid
     const gridResp = await fetch(
       `${BASE_URL}/reservation/short?iPlaceId=1&sDate=${date}`,
-      { headers: { 'User-Agent': UA, 'Cookie': cookies.join('; ') } }
+      {
+        headers: {
+          'User-Agent': UA,
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'lt,en;q=0.5',
+          'Cookie': cookies.join('; '),
+        },
+        redirect: 'manual',
+      }
     )
+
+    // If grid redirects, the session is invalid
+    if (gridResp.status >= 300 && gridResp.status < 400) {
+      venue.error = 'Session expired — grid redirected to login'
+      return venue
+    }
+
     const html = await gridResp.text()
 
     if (html.includes('LoginForm') && !html.includes('booking-slot')) {
       venue.error = 'Guest login failed'
+      return venue
+    }
+
+    // If page loaded but has no booking data at all
+    if (!html.includes('booking-slot') && !html.includes('rbt-sticky-col')) {
+      venue.error = 'Grid page loaded but contains no booking data'
       return venue
     }
 
@@ -172,6 +173,10 @@ export async function scrapeKaunoPadelis(date: string): Promise<Venue> {
         })
       }
     })
+
+    if (venue.courts.length === 0) {
+      venue.error = 'Grid loaded but no courts parsed — HTML structure may have changed'
+    }
   } catch (err: any) {
     venue.error = 'Failed to fetch Kauno Padelio Klubas data'
   }

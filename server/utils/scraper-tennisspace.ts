@@ -1,45 +1,14 @@
 import { load } from 'cheerio'
 import type { Venue, Court, TimeSlot } from './types'
+import { extractSetCookies, mergeCookies } from './cookies'
 
 /**
  * Tennis Space — nTennis/nSoft platform (Yii PHP)
  * Requires guest auto-login: GET login page → extract CSRF + hidden creds → POST login → GET reservation grid
- * Uses native fetch for cookie management.
  */
 
 const BASE_URL = 'https://savitarna.tennisspace.lt'
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-
-function extractSetCookies(headers: Headers): string[] {
-  const cookies: string[] = []
-  // getSetCookie() returns all Set-Cookie headers as an array
-  const raw = (headers as any).getSetCookie?.() ?? []
-  for (const c of raw) {
-    const part = c.split(';')[0]
-    if (part) cookies.push(part)
-  }
-  // Fallback: try raw header
-  if (cookies.length === 0) {
-    const raw2 = headers.get('set-cookie')
-    if (raw2) {
-      for (const c of raw2.split(/,(?=\s*\w+=)/)) {
-        const part = c.split(';')[0].trim()
-        if (part) cookies.push(part)
-      }
-    }
-  }
-  return cookies
-}
-
-function mergeCookies(existing: string[], incoming: string[]): string[] {
-  const map = new Map<string, string>()
-  for (const c of [...existing, ...incoming]) {
-    const eq = c.indexOf('=')
-    const key = eq > 0 ? c.slice(0, eq) : c
-    map.set(key, c)
-  }
-  return Array.from(map.values())
-}
 
 export async function scrapeTennisSpace(date: string): Promise<Venue> {
   const venue: Venue = {
@@ -111,14 +80,23 @@ export async function scrapeTennisSpace(date: string): Promise<Venue> {
     // Step 3: GET reservation grid
     const gridResp = await fetch(
       `${BASE_URL}/reservation/short?iPlaceId=4&sDate=${date}`,
-      {
-        headers: { 'User-Agent': UA, 'Cookie': cookies.join('; ') },
-      }
+      { headers: { 'User-Agent': UA, 'Cookie': cookies.join('; ') }, redirect: 'manual' }
     )
+
+    if (gridResp.status >= 300 && gridResp.status < 400) {
+      venue.error = 'Session expired — grid redirected to login'
+      return venue
+    }
+
     const html = await gridResp.text()
 
     if (html.includes('LoginForm') && !html.includes('booking-slot')) {
       venue.error = 'Guest login failed — still on login page'
+      return venue
+    }
+
+    if (!html.includes('booking-slot') && !html.includes('rbt-sticky-col')) {
+      venue.error = 'Grid page loaded but contains no booking data'
       return venue
     }
 
