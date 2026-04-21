@@ -176,6 +176,16 @@
         </button>
       </div>
 
+      <!-- Ad unit -->
+      <div class="mb-4 flex justify-center">
+        <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-7290396604686794"
+          data-ad-slot="auto"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+      </div>
+
       <!-- Venue cards -->
       <div class="space-y-4">
         <article v-for="(venue, vIdx) in filteredVenues" :key="venue.id"
@@ -306,6 +316,14 @@ const filterType = ref<'doubles' | 'singles' | null>(null)
 const selectedCity = ref<City | null>('Kaunas')
 const gpsState = ref<'idle' | 'loading' | 'done' | 'error'>('idle')
 const refreshing = ref(false)
+
+// Initialize AdSense ad units after mount
+onMounted(() => {
+  try {
+    const w = window as any
+    ;(w.adsbygoogle = w.adsbygoogle || []).push({})
+  } catch {}
+})
 
 const isToday = computed(() => selectedDate.value === today)
 
