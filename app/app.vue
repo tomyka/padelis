@@ -36,7 +36,7 @@
     <footer class="border-t border-gray-200/50 bg-white/50 py-5 shrink-0">
       <div class="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-gray-400">
         <span>© {{ new Date().getFullYear() }} Žaisk Padelį</span>
-        <span>Duomenys atnaujinami kas 10 min · Kaina už 30 min</span>
+        <span>Duomenys atnaujinami kas 5 min · Kaina už 30 min</span>
       </div>
     </footer>
   </div>
