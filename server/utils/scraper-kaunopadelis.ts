@@ -43,6 +43,7 @@ export async function scrapeKaunoPadelis(date: string): Promise<Venue> {
     id: 'kaunopadelis',
     name: 'Kauno Padelio Klubas',
     address: 'Lyderystės g. 6, Kaunas',
+    city: 'Kaunas',
     bookingUrl: `${BASE_URL}/reservation/short`,
     courts: [],
     lastUpdated: new Date().toISOString(),

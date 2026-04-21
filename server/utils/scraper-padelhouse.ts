@@ -33,6 +33,7 @@ export async function scrapePadelHouse(date: string): Promise<Venue> {
     id: 'padelhouse',
     name: 'Padel House',
     address: 'A. Juozapavičiaus pr. 3, Kaunas',
+    city: 'Kaunas',
     bookingUrl: 'https://rezervacija.padelhouse.lt/',
     courts: [],
     lastUpdated: new Date().toISOString(),

@@ -11,10 +11,23 @@ export interface Court {
   slots: TimeSlot[]
 }
 
+export type City = 'Vilnius' | 'Kaunas' | 'Klaipėda' | 'Šiauliai' | 'Panevėžys'
+
+export const CITIES: City[] = ['Vilnius', 'Kaunas', 'Klaipėda', 'Šiauliai', 'Panevėžys']
+
+export const CITY_COORDS: Record<City, { lat: number; lng: number }> = {
+  'Vilnius':    { lat: 54.6872, lng: 25.2797 },
+  'Kaunas':     { lat: 54.8985, lng: 23.9036 },
+  'Klaipėda':   { lat: 55.7033, lng: 21.1443 },
+  'Šiauliai':   { lat: 55.9349, lng: 23.3137 },
+  'Panevėžys':  { lat: 55.7348, lng: 24.3601 },
+}
+
 export interface Venue {
   id: string          // "padelhub", "tennisspace", "padelhouse", "kaunopadelis"
   name: string        // "Balcia Padel Hub"
   address: string
+  city: City
   bookingUrl: string
   courts: Court[]
   lastUpdated: string // ISO timestamp

@@ -6,7 +6,7 @@
       <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 class="text-xl font-bold text-gray-900 sm:text-2xl">Laisvos aikštelės</h2>
-          <p class="mt-0.5 text-sm text-gray-500">Visi Kauno padelio kortai vienoje vietoje</p>
+          <p class="mt-0.5 text-sm text-gray-500">Padelio kortai vienoje vietoje</p>
         </div>
         <!-- Date picker -->
         <div class="flex items-center gap-2">
@@ -29,6 +29,37 @@
             Šiandien
           </button>
         </div>
+      </div>
+
+      <!-- City filter -->
+      <div class="flex items-center gap-2">
+        <svg class="h-4 w-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+        </svg>
+        <div class="flex flex-wrap gap-1.5">
+          <button v-for="city in CITIES" :key="city" @click="selectedCity = city"
+            :class="['rounded-full px-3 py-1 text-xs font-medium border transition',
+              selectedCity === city
+                ? 'bg-emerald-500 border-emerald-500 text-white'
+                : 'bg-white border-gray-300 text-gray-600 hover:border-emerald-400 hover:text-emerald-700']">
+            {{ city }}
+            <span v-if="city !== 'Kaunas'" class="ml-1 opacity-50 text-[9px]">snart</span>
+          </button>
+        </div>
+        <button v-if="gpsState === 'idle'" @click="detectCity"
+          class="ml-auto flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-600 shadow-sm hover:bg-gray-50 shrink-0">
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+          </svg>
+          Mano vieta
+        </button>
+        <span v-else-if="gpsState === 'loading'" class="ml-auto text-xs text-gray-400 flex items-center gap-1">
+          <svg class="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+          Nustatoma...
+        </span>
+        <span v-else-if="gpsState === 'done'" class="ml-auto text-xs text-emerald-600">📍 {{ selectedCity }}</span>
+        <span v-else-if="gpsState === 'error'" class="ml-auto text-xs text-red-400">GPS neprieinamas</span>
       </div>
 
       <!-- Filter row -->
@@ -173,7 +204,10 @@
 
         <!-- No results at all -->
         <div v-if="filteredVenues.length === 0" class="py-16 text-center">
-          <p class="text-gray-500">Nėra laisvų kortų pagal pasirinktus filtrus</p>
+          <p class="text-gray-500">
+            <span v-if="selectedCity !== 'Kaunas'">{{ selectedCity }} mieste kortų duomenys kol kas neprieinami 🚧</span>
+            <span v-else>Nėra laisvų kortų pagal pasirinktus filtrus</span>
+          </p>
           <button @click="clearFilters" class="mt-3 text-sm text-emerald-600 hover:underline">Išvalyti filtrus</button>
         </div>
 
@@ -203,7 +237,8 @@
 </template>
 
 <script setup lang="ts">
-import type { AvailabilityResponse, Venue, Court } from '~~/server/utils/types'
+import type { AvailabilityResponse, Venue, Court, City } from '~~/server/utils/types'
+import { CITIES, CITY_COORDS } from '~~/server/utils/types'
 
 const today = new Date().toISOString().split('T')[0]
 const selectedDate = ref(today)
@@ -211,11 +246,15 @@ const activeVenue = ref<string | null>(null)
 const filterStart = ref<string>('')
 const filterEnd = ref<string>('')
 const filterType = ref<'doubles' | 'singles' | null>(null)
+const selectedCity = ref<City>('Kaunas')
+const gpsState = ref<'idle' | 'loading' | 'done' | 'error'>('idle')
 
 const isToday = computed(() => selectedDate.value === today)
 
 // Reset end when start changes (avoid invalid range)
 watch(filterStart, () => { filterEnd.value = '' })
+
+watch(selectedCity, () => { activeVenue.value = null })
 
 function changeDate(delta: number) {
   const d = new Date(selectedDate.value)
@@ -299,6 +338,7 @@ function filteredCourts(venue: Venue): Court[] {
 
 const filteredVenues = computed(() => {
   return venues.value.filter(v => {
+    if (v.city !== selectedCity.value) return false
     if (activeVenue.value && v.id !== activeVenue.value) return false
     return filteredCourts(v).length > 0 || v.error
   })
@@ -325,6 +365,27 @@ function clearFilters() {
   filterEnd.value = ''
   filterType.value = null
   activeVenue.value = null
+}
+
+function detectCity() {
+  if (!navigator.geolocation) { gpsState.value = 'error'; return }
+  gpsState.value = 'loading'
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude: lat, longitude: lng } = pos.coords
+      // Find nearest city using Euclidean distance on lat/lng
+      let nearest: City = 'Kaunas'
+      let minDist = Infinity
+      for (const [city, coords] of Object.entries(CITY_COORDS) as [City, {lat:number,lng:number}][]) {
+        const dist = Math.sqrt((lat - coords.lat) ** 2 + (lng - coords.lng) ** 2)
+        if (dist < minDist) { minDist = dist; nearest = city }
+      }
+      selectedCity.value = nearest
+      gpsState.value = 'done'
+    },
+    () => { gpsState.value = 'error' },
+    { timeout: 8000 }
+  )
 }
 
 function venueStyle(id: string) {

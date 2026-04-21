@@ -10,6 +10,7 @@ export async function scrapePadelHub(date: string): Promise<Venue> {
     id: 'padelhub',
     name: 'Balcia Padel Hub',
     address: 'B. Brazdžionio g. 25, Kaunas',
+    city: 'Kaunas',
     bookingUrl: 'https://savpadelhub.mokesta.lt/',
     courts: [],
     lastUpdated: new Date().toISOString(),

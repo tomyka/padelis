@@ -46,6 +46,7 @@ export async function scrapeTennisSpace(date: string): Promise<Venue> {
     id: 'tennisspace',
     name: 'Tennis Space',
     address: 'Islandijos pl. 9C, Kaunas',
+    city: 'Kaunas',
     bookingUrl: `${BASE_URL}/reservation/short?iPlaceId=4`,
     courts: [],
     lastUpdated: new Date().toISOString(),
