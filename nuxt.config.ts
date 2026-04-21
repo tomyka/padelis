@@ -10,7 +10,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Zaisk Padeli',
+      title: 'Žaisk Padelį',
       meta: [
         { name: 'description', content: 'Visos Lietuvos padelio aikštelių užimtumas vienoje vietoje' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -26,8 +26,8 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
-      name: 'Zaisk Padeli',
-      short_name: 'Padeli',
+      name: 'Žaisk Padelį',
+      short_name: 'Žaisk Padelį',
       description: 'Lietuvos padelio aikštelių užimtumas',
       theme_color: '#0f172a',
       background_color: '#0f172a',
