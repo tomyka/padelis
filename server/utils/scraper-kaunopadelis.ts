@@ -106,12 +106,10 @@ export async function scrapeKaunoPadelis(date: string): Promise<Venue> {
 
     // If page loaded but has no booking data at all
     if (!html.includes('booking-slot') && !html.includes('rbt-sticky-col')) {
-      // Diagnostic: report what we actually got
-      const len = html.length
-      const title = html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || 'no-title'
-      const hasTable = html.includes('<table')
-      const hasForm = html.includes('<form')
-      venue.error = `No booking data (${len}b, title="${title}", table=${hasTable}, form=${hasForm})`
+      const isCfChallenge = html.includes('Just a moment') || html.includes('cf-browser-verification')
+      venue.error = isCfChallenge
+        ? 'Svetainė apsaugota Cloudflare — duomenys neprieinami'
+        : 'Rezervacijos duomenys neprieinami'
       return venue
     }
 
