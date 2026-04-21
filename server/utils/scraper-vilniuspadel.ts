@@ -113,6 +113,18 @@ export async function scrapeVilniusPadel(date: string): Promise<Venue> {
 
     const $ = load(html)
 
+    // Color→price map from legend (per hour → divide by 2 for 30-min slot)
+    const colorPriceMap = new Map<string, number>()
+    $('.legend-item').each((_, el) => {
+      const style = $(el).find('span[style]').attr('style') || ''
+      const colorMatch = style.match(/background-color:\s*(#[0-9a-fA-F]+)/i)
+      const priceText = $(el).text().trim()
+      const priceMatch = priceText.match(/(\d+(?:[.,]\d+)?)\s*€/)
+      if (colorMatch && priceMatch) {
+        colorPriceMap.set(colorMatch[1].toLowerCase(), parseFloat(priceMatch[1].replace(',', '.')) / 2)
+      }
+    })
+
     // Build time slot list from hour headers (each hour → :00 and :30)
     const slotTimes: string[] = []
     $('thead th').each((_, el) => {
@@ -144,7 +156,10 @@ export async function scrapeVilniusPadel(date: string): Promise<Venue> {
         if (isAvailable || isBooked || isPast) {
           const time = slotTimes[slotIdx] || ''
           if (time) {
-            slots.push({ time, available: isAvailable, price: null })
+            const style = $(cell).attr('style') || ''
+            const bgColor = style.match(/background-color:\s*(#[0-9a-fA-F]+)/i)?.[1]?.toLowerCase()
+            const price = isAvailable && bgColor ? (colorPriceMap.get(bgColor) ?? null) : null
+            slots.push({ time, available: isAvailable, price })
           }
           slotIdx++
         }
