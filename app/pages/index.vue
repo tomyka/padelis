@@ -44,7 +44,7 @@
                 ? 'bg-emerald-500 border-emerald-500 text-white'
                 : 'bg-white border-gray-300 text-gray-600 hover:border-emerald-400 hover:text-emerald-700']">
             {{ city }}
-            <span v-if="city !== 'Kaunas'" class="ml-1 opacity-50 text-[9px]">snart</span>
+            <span v-if="city !== 'Kaunas' && city !== 'Vilnius' && city !== 'Klaipėda'" class="ml-1 opacity-50 text-[9px]">snart</span>
           </button>
         </div>
         <button v-if="gpsState === 'idle'" @click="detectCity"
@@ -205,7 +205,7 @@
         <!-- No results at all -->
         <div v-if="filteredVenues.length === 0" class="py-16 text-center">
           <p class="text-gray-500">
-            <span v-if="selectedCity && selectedCity !== 'Kaunas' && selectedCity !== 'Vilnius'">{{ selectedCity }} mieste kortų duomenys kol kas neprieinami 🚧</span>
+            <span v-if="selectedCity && selectedCity !== 'Kaunas' && selectedCity !== 'Vilnius' && selectedCity !== 'Klaipėda'">{{ selectedCity }} mieste kortų duomenys kol kas neprieinami 🚧</span>
             <span v-else>Nėra laisvų kortų pagal pasirinktus filtrus</span>
           </p>
           <button @click="clearFilters" class="mt-3 text-sm text-emerald-600 hover:underline">Išvalyti filtrus</button>
@@ -402,6 +402,7 @@ function venueStyle(id: string) {
     vilniuspadel: { emoji: '⭐', iconBg: 'bg-violet-50',  headerBg: 'bg-violet-50/50 border-b border-violet-100',   activePill: 'border-violet-400 bg-violet-50 text-violet-700' },
     zirmunai:     { emoji: '🌿', iconBg: 'bg-teal-50',    headerBg: 'bg-teal-50/50 border-b border-teal-100',       activePill: 'border-teal-400 bg-teal-50 text-teal-700' },
     padelfactory: { emoji: '🏭', iconBg: 'bg-rose-50',    headerBg: 'bg-rose-50/50 border-b border-rose-100',       activePill: 'border-rose-400 bg-rose-50 text-rose-700' },
+    a1padel:      { emoji: '🏖️', iconBg: 'bg-cyan-50',    headerBg: 'bg-cyan-50/50 border-b border-cyan-100',       activePill: 'border-cyan-400 bg-cyan-50 text-cyan-700' },
   }
   return styles[id] || { emoji: '📍', iconBg: 'bg-gray-100', headerBg: 'bg-gray-50 border-b border-gray-100', activePill: 'border-gray-400 bg-gray-50 text-gray-700' }
 }

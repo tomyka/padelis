@@ -3,6 +3,7 @@ import { scrapePadelHouse } from '../utils/scraper-padelhouse'
 import { scrapeTennisSpace } from '../utils/scraper-tennisspace'
 import { scrapeKaunoPadelis } from '../utils/scraper-kaunopadelis'
 import { scrapeVilniusPadel } from '../utils/scraper-vilniuspadel'
+import { scrapeA1Padel } from '../utils/scraper-a1padel'
 import { scrapeWineroArena, WINERO_VENUES } from '../utils/scraper-winero'
 import { getCached, setCached, getInflight, setInflight, cacheAgeSeconds } from '../utils/cache'
 import type { AvailabilityResponse } from '../utils/types'
@@ -31,18 +32,19 @@ export default defineEventHandler(async (event): Promise<AvailabilityResponse> =
   if (existing) return existing
 
   const promise = (async (): Promise<AvailabilityResponse> => {
-    const [padelhub, padelhouse, tennisspace, kaunopadelis, vilniuspadel, ...wineroVenues] = await Promise.all([
+    const [padelhub, padelhouse, tennisspace, kaunopadelis, vilniuspadel, a1padel, ...wineroVenues] = await Promise.all([
       scrapePadelHub(date),
       scrapePadelHouse(date),
       scrapeTennisSpace(date),
       scrapeKaunoPadelis(date),
       scrapeVilniusPadel(date),
+      scrapeA1Padel(date),
       ...WINERO_VENUES.map(cfg => scrapeWineroArena(cfg, date)),
     ])
 
     const result: AvailabilityResponse = {
       date,
-      venues: [padelhub, padelhouse, tennisspace, kaunopadelis, vilniuspadel, ...wineroVenues],
+      venues: [padelhub, padelhouse, tennisspace, kaunopadelis, vilniuspadel, a1padel, ...wineroVenues],
       fetchedAt: new Date().toISOString(),
       fromCache: false,
       cacheAgeSeconds: 0,
