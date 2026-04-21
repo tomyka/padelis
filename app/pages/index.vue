@@ -176,16 +176,6 @@
         </button>
       </div>
 
-      <!-- Ad unit -->
-      <div class="mb-4 flex justify-center">
-        <ins class="adsbygoogle"
-          style="display:block"
-          data-ad-client="ca-pub-7290396604686794"
-          data-ad-slot="auto"
-          data-ad-format="auto"
-          data-full-width-responsive="true"></ins>
-      </div>
-
       <!-- Venue cards -->
       <div class="space-y-4">
         <article v-for="(venue, vIdx) in filteredVenues" :key="venue.id"
@@ -286,6 +276,31 @@
           class="mt-3 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-emerald-600 hover:bg-emerald-50 transition">
           Išvalyti filtrus
         </button>
+      </div>
+
+      <!-- Ad unit — shown after users have seen the value -->
+      <div class="mt-6 flex justify-center">
+        <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-7290396604686794"
+          data-ad-slot="auto"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+      </div>
+
+      <!-- Donation banner — shown after users have gotten value -->
+      <div class="mt-6 rounded-2xl border border-amber-100 bg-amber-50/60 px-5 py-4 flex flex-col sm:flex-row items-center gap-4">
+        <div class="flex-1 text-center sm:text-left">
+          <p class="text-sm font-semibold text-amber-900">Rado naudingą?</p>
+          <p class="mt-0.5 text-xs text-amber-700/80">Šis įrankis sukurtas vieno žmogaus pomėgio projekto — padeda rasti laisvas padelio aikšteles visoje Lietuvoje. Jei sutaupei laiko, galima paremti kavos kaina ☕</p>
+        </div>
+        <a href="https://revolut.me/tomyka" target="_blank" rel="noopener"
+          class="shrink-0 inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md active:scale-[0.97]">
+          <span>Paremti</span>
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
+          </svg>
+        </a>
       </div>
 
       <!-- Data freshness indicator -->

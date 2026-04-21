@@ -31,14 +31,8 @@
 
     <!-- Footer -->
     <footer class="border-t border-gray-200/50 bg-white/50 py-5 shrink-0">
-      <div class="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-gray-400">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-gray-400">
         <span>© {{ new Date().getFullYear() }} Žaisk Padelį</span>
-        <a href="https://revolut.me/tomyka" target="_blank" rel="noopener"
-          class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200/60 px-3 py-1.5 text-[11px] font-medium text-amber-700 hover:bg-amber-100 transition"
-          title="Paremk projektą per Revolut">
-          <span class="text-base leading-none">☕</span>
-          Paremk projektą
-        </a>
         <span>Duomenys atnaujinami kas 5 min · Kaina už 30 min</span>
       </div>
     </footer>
