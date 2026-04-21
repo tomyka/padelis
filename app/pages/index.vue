@@ -38,7 +38,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
         </svg>
         <div class="flex flex-wrap gap-1.5">
-          <button v-for="city in CITIES" :key="city" @click="selectedCity = city"
+          <button v-for="city in CITIES" :key="city" @click="selectedCity = selectedCity === city ? null : city"
             :class="['rounded-full px-3 py-1 text-xs font-medium border transition',
               selectedCity === city
                 ? 'bg-emerald-500 border-emerald-500 text-white'
@@ -58,7 +58,7 @@
           <svg class="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
           Nustatoma...
         </span>
-        <span v-else-if="gpsState === 'done'" class="ml-auto text-xs text-emerald-600">📍 {{ selectedCity }}</span>
+        <span v-else-if="gpsState === 'done'" class="ml-auto text-xs text-emerald-600">📍 {{ selectedCity ?? 'Visi miestai' }}</span>
         <span v-else-if="gpsState === 'error'" class="ml-auto text-xs text-red-400">GPS neprieinamas</span>
       </div>
 
@@ -205,7 +205,7 @@
         <!-- No results at all -->
         <div v-if="filteredVenues.length === 0" class="py-16 text-center">
           <p class="text-gray-500">
-            <span v-if="selectedCity !== 'Kaunas'">{{ selectedCity }} mieste kortų duomenys kol kas neprieinami 🚧</span>
+            <span v-if="selectedCity && selectedCity !== 'Kaunas' && selectedCity !== 'Vilnius'">{{ selectedCity }} mieste kortų duomenys kol kas neprieinami 🚧</span>
             <span v-else>Nėra laisvų kortų pagal pasirinktus filtrus</span>
           </p>
           <button @click="clearFilters" class="mt-3 text-sm text-emerald-600 hover:underline">Išvalyti filtrus</button>
@@ -246,7 +246,7 @@ const activeVenue = ref<string | null>(null)
 const filterStart = ref<string>('')
 const filterEnd = ref<string>('')
 const filterType = ref<'doubles' | 'singles' | null>(null)
-const selectedCity = ref<City>('Kaunas')
+const selectedCity = ref<City | null>('Kaunas')
 const gpsState = ref<'idle' | 'loading' | 'done' | 'error'>('idle')
 
 const isToday = computed(() => selectedDate.value === today)
@@ -271,7 +271,9 @@ const { data, pending, error, refresh } = useFetch<AvailabilityResponse>('/api/a
 const venues = computed(() => data.value?.venues || [])
 
 // Venues for the currently selected city
-const cityVenues = computed(() => venues.value.filter(v => v.city === selectedCity.value))
+const cityVenues = computed(() =>
+  selectedCity.value ? venues.value.filter(v => v.city === selectedCity.value) : venues.value
+)
 
 // All possible 30-min times across all venues
 const allTimeSlots = computed(() => {
@@ -341,7 +343,7 @@ function filteredCourts(venue: Venue): Court[] {
 
 const filteredVenues = computed(() => {
   return venues.value.filter(v => {
-    if (v.city !== selectedCity.value) return false
+    if (selectedCity.value && v.city !== selectedCity.value) return false
     if (activeVenue.value && v.id !== activeVenue.value) return false
     return filteredCourts(v).length > 0 || v.error
   })
