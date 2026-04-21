@@ -1,0 +1,22 @@
+name: Pre-warm scrape cache
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # every 5 minutes
+  workflow_dispatch:         # allow manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Trigger scrape
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://zaiskpadeli.lt/api/cron/scrape")
+          echo "Response: $response"
+          if [ "$response" != "200" ]; then
+            echo "Scrape returned HTTP $response"
+            exit 1
+          fi
