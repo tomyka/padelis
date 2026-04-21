@@ -32,9 +32,9 @@
     <!-- Floating donation button -->
     <a href="https://revolut.me/tomyka" target="_blank" rel="noopener"
       title="Paremk projektą per Revolut"
-      class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-2 rounded-full bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95">
+      class="fixed bottom-5 right-4 z-50 inline-flex items-center gap-2 rounded-full bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 group">
       <span class="text-base leading-none">☕</span>
-      <span>Paremti projektą</span>
+      <span class="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-[7rem]">Paremti</span>
     </a>
 
     <!-- Footer -->
