@@ -67,16 +67,20 @@ export async function scrapeTennisSpace(date: string): Promise<Venue> {
     const guestLogin = $login('input[type="hidden"][name="LoginForm[var_login]"]').first().attr('value')
     const guestPass = $login('input[type="hidden"][name="LoginForm[var_password]"]').first().attr('value')
 
-    if (!csrf || !guestLogin || !guestPass) {
-      venue.error = 'Could not extract guest credentials from login page'
+    // Fallback: public guest credentials visible in source HTML
+    const login = guestLogin || '1arAQhwrzwdEjuCtobqyvVUtf5FCLJBPfw4yxmeb6d'
+    const pass = guestPass || 'jMkJE8b8Pjcvs5ncD0CKtNZTu9TP5Kq4T9aL04u9Yw'
+
+    if (!csrf) {
+      venue.error = 'Could not extract CSRF token from login page'
       return venue
     }
 
     // Step 2: POST guest login
     const body = new URLSearchParams({
       'YII_CSRF_TOKEN': csrf,
-      'LoginForm[var_login]': guestLogin,
-      'LoginForm[var_password]': guestPass,
+      'LoginForm[var_login]': login,
+      'LoginForm[var_password]': pass,
     })
 
     const postResp = await fetch(`${BASE_URL}/user/login`, {
