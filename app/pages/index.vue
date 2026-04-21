@@ -288,21 +288,6 @@
           data-full-width-responsive="true"></ins>
       </div>
 
-      <!-- Donation banner — shown after users have gotten value -->
-      <div class="mt-6 rounded-2xl border border-amber-100 bg-amber-50/60 px-5 py-4 flex flex-col sm:flex-row items-center gap-4">
-        <div class="flex-1 text-center sm:text-left">
-          <p class="text-sm font-semibold text-amber-900">Rado naudingą?</p>
-          <p class="mt-0.5 text-xs text-amber-700/80">Šis įrankis sukurtas vieno žmogaus pomėgio projekto — padeda rasti laisvas padelio aikšteles visoje Lietuvoje. Jei sutaupei laiko, galima paremti kavos kaina ☕</p>
-        </div>
-        <a href="https://revolut.me/tomyka" target="_blank" rel="noopener"
-          class="shrink-0 inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md active:scale-[0.97]">
-          <span>Paremti</span>
-          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
-          </svg>
-        </a>
-      </div>
-
       <!-- Data freshness indicator -->
       <div v-if="data" class="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-gray-400">
         <span v-if="data.fromCache" class="flex items-center gap-1">
