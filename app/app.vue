@@ -21,9 +21,6 @@
               Žaisk <span class="text-emerald-600">Padelį</span>
             </span>
           </a>
-          <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600">
-            beta
-          </span>
         </div>
       </div>
     </header>
