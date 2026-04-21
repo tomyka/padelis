@@ -97,7 +97,7 @@
 
         <!-- Venue pills -->
         <div class="ml-auto flex flex-wrap gap-1.5">
-          <button v-for="venue in venues" :key="venue.id"
+          <button v-for="venue in cityVenues" :key="venue.id"
             @click="activeVenue = activeVenue === venue.id ? null : venue.id"
             :class="['rounded-full border px-3 py-1 text-xs font-medium transition',
               activeVenue === venue.id
@@ -269,6 +269,9 @@ const { data, pending, error, refresh } = useFetch<AvailabilityResponse>('/api/a
 })
 
 const venues = computed(() => data.value?.venues || [])
+
+// Venues for the currently selected city
+const cityVenues = computed(() => venues.value.filter(v => v.city === selectedCity.value))
 
 // All possible 30-min times across all venues
 const allTimeSlots = computed(() => {
