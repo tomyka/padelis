@@ -106,7 +106,12 @@ export async function scrapeKaunoPadelis(date: string): Promise<Venue> {
 
     // If page loaded but has no booking data at all
     if (!html.includes('booking-slot') && !html.includes('rbt-sticky-col')) {
-      venue.error = 'Grid page loaded but contains no booking data'
+      // Diagnostic: report what we actually got
+      const len = html.length
+      const title = html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || 'no-title'
+      const hasTable = html.includes('<table')
+      const hasForm = html.includes('<form')
+      venue.error = `No booking data (${len}b, title="${title}", table=${hasTable}, form=${hasForm})`
       return venue
     }
 
