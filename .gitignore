@@ -24,3 +24,6 @@ logs
 !.env.example
 .vercel
 .env*.local
+
+# Local Claude Code config (settings.local.json, worktrees, lock files)
+.claude/
