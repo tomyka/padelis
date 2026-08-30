@@ -10,13 +10,13 @@
 
 interface Env {
   PROXY_TOKEN: string
+  KAUNOPADELIS_LOGIN: string
+  KAUNOPADELIS_PASSWORD: string
 }
 
-const SITES: Record<string, { base: string; login: string; password: string; placeId: string }> = {
+const SITES: Record<string, { base: string; placeId: string }> = {
   kaunopadelis: {
     base: 'https://savitarna.kaunopadelis.lt',
-    login: 'Rezervacija Kauno padelio klubas',
-    password: 'Kimas166!245989lku?',
     placeId: '1',
   },
 }
@@ -81,7 +81,10 @@ export default {
     }
 
     try {
-      const result = await fetchGrid(cfg, date)
+      const result = await fetchGrid(cfg, date, {
+        login: env.KAUNOPADELIS_LOGIN,
+        password: env.KAUNOPADELIS_PASSWORD,
+      })
       return json(result)
     } catch (err: any) {
       return json({ error: err?.message ?? 'Unknown error' }, 500)
@@ -93,11 +96,12 @@ export default {
 
 async function fetchGrid(
   cfg: (typeof SITES)[string],
-  date: string
-): Promise<{ html: string; status: number; loginStatus: number }> {
+  date: string,
+  creds: { login: string; password: string }
+): Promise<{ html: string; status: number; loginStatus: number; error?: string }> {
   const { base } = cfg
 
-  // Step 1: GET login page → session cookie + optional CSRF/creds
+  // Step 1: GET login page → session cookie + CSRF token + embedded guest credentials
   const loginResp = await fetch(`${base}/user/login`, {
     headers: { 'User-Agent': UA, Accept: 'text/html', 'Accept-Language': 'lt,en;q=0.5' },
     redirect: 'manual',
@@ -105,17 +109,12 @@ async function fetchGrid(
   let cookies = extractCookies(loginResp.headers)
   const loginHtml = await loginResp.text()
 
-  // Try to extract dynamic credentials from the page
-  const csrfMatch = loginHtml.match(/name="YII_CSRF_TOKEN"[^>]*value="([^"]+)"/)
-  const loginMatch = loginHtml.match(
-    /type="hidden"[^>]*name="LoginForm\[var_login\]"[^>]*value="([^"]+)"/
-  )
-  const passMatch = loginHtml.match(
-    /type="hidden"[^>]*name="LoginForm\[var_password\]"[^>]*value="([^"]+)"/
-  )
-
-  const guestLogin = loginMatch?.[1] ?? cfg.login
-  const guestPass = passMatch?.[1] ?? cfg.password
+  // Try to extract dynamic credentials from the page (attribute-order-independent)
+  // Use || not ?? so that empty-string values also fall back to configured defaults
+  const csrfMatch = loginHtml.match(/name="YII_CSRF_TOKEN"[^>]*value="([^"]+)"/) ||
+                    loginHtml.match(/value="([^"]+)"[^>]*name="YII_CSRF_TOKEN"/)
+  const guestLogin = extractInputValue(loginHtml, 'LoginForm[var_login]') || creds.login
+  const guestPass = extractInputValue(loginHtml, 'LoginForm[var_password]') || creds.password
 
   // Step 2: POST guest login
   const params = new URLSearchParams({
@@ -139,8 +138,13 @@ async function fetchGrid(
   })
   cookies = mergeCookies(cookies, extractCookies(postResp.headers))
 
-  // Follow redirect
+  // A successful login redirects (302); status 200 means login was rejected
   const location = postResp.headers.get('location')
+  if (postResp.status === 200 && !location) {
+    return { html: '', status: 200, loginStatus: 200, error: 'Login failed — credentials rejected by site' }
+  }
+
+  // Follow redirect
   if (location) {
     const rUrl = location.startsWith('http') ? location : `${base}${location}`
     const rResp = await fetch(rUrl, {
@@ -170,6 +174,22 @@ async function fetchGrid(
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Extract a hidden input's value regardless of attribute order */
+function extractInputValue(html: string, name: string): string | undefined {
+  // Escape brackets for regex
+  const escapedName = name.replace(/[[\]]/g, '\\$&')
+  // Match ALL <input ...> tags with this name, prefer type="hidden" with a non-empty value
+  const tagRe = new RegExp(`<input[^>]*name="${escapedName}"[^>]*>`, 'gi')
+  let match: RegExpExecArray | null
+  while ((match = tagRe.exec(html)) !== null) {
+    const tag = match[0]
+    if (!tag.includes('type="hidden"') && !tag.includes("type='hidden'")) continue
+    const valueMatch = tag.match(/value="([^"]+)"/)
+    if (valueMatch?.[1]) return valueMatch[1]
+  }
+  return undefined
+}
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {

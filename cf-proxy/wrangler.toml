@@ -3,4 +3,7 @@ main = "src/worker.ts"
 compatibility_date = "2025-01-01"
 
 [vars]
-# PROXY_TOKEN is set via `wrangler secret put PROXY_TOKEN`
+# Secrets — set via `wrangler secret put <NAME>`, never committed here:
+#   PROXY_TOKEN
+#   KAUNOPADELIS_LOGIN
+#   KAUNOPADELIS_PASSWORD

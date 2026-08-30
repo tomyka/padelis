@@ -40,7 +40,7 @@ export async function scrapeKaunoPadelis(date: string): Promise<Venue> {
   return venue
 }
 
-/** Try CF Worker proxy, fall back to direct fetch */
+/** Try CF Worker proxy, fall back to direct fetch (local dev only) */
 async function fetchGridHtml(date: string): Promise<string | null> {
   const proxyUrl = process.env.CF_PROXY_URL
   const proxyToken = process.env.CF_PROXY_TOKEN
@@ -53,18 +53,37 @@ async function fetchGridHtml(date: string): Promise<string | null> {
         headers: { Authorization: `Bearer ${proxyToken}` },
       })
       if (resp.ok) {
-        const data = (await resp.json()) as { html?: string; error?: string }
+        const data = (await resp.json()) as {
+          html?: string
+          error?: string
+          status?: number
+          loginStatus?: number
+        }
         if (data.html && data.html.includes('booking-slot')) {
           return data.html
         }
-        // Proxy returned but no booking data — could be CF challenge even from Worker
+        // Proxy returned but no usable booking data — log details for diagnosis
+        console.warn('[kaunopadelis] Proxy returned no booking data', {
+          hasHtml: !!data.html,
+          htmlLength: data.html?.length ?? 0,
+          proxyStatus: data.status,
+          loginStatus: data.loginStatus,
+          proxyError: data.error,
+          hasCfChallenge: data.html?.includes('Just a moment') || data.html?.includes('cf-browser-verification'),
+          hasLoginForm: data.html?.includes('LoginForm'),
+        })
+      } else {
+        console.warn('[kaunopadelis] Proxy HTTP error', { status: resp.status })
       }
-    } catch {
-      // Proxy failed, fall through to direct
+    } catch (e) {
+      console.warn('[kaunopadelis] Proxy fetch threw', (e as Error).message)
     }
+    // Proxy is configured — do NOT fall back to direct fetch.
+    // Vercel datacenter IPs are blocked by Cloudflare; direct fetch will always fail.
+    return null
   }
 
-  // ── Direct path (works locally, may be blocked by Cloudflare in production) ──
+  // ── Direct path (local dev only — blocked by Cloudflare on Vercel) ──
   return await fetchGridDirect(date)
 }
 
@@ -82,8 +101,8 @@ async function fetchGridDirect(date: string): Promise<string | null> {
   const guestLogin = $login('input[type="hidden"][name="LoginForm[var_login]"]').first().attr('value')
   const guestPass = $login('input[type="hidden"][name="LoginForm[var_password]"]').first().attr('value')
 
-  const login = guestLogin || 'Rezervacija Kauno padelio klubas'
-  const pass = guestPass || 'Kimas166!245989lku?'
+  const login = guestLogin || process.env.KAUNOPADELIS_LOGIN || ''
+  const pass = guestPass || process.env.KAUNOPADELIS_PASSWORD || ''
 
   // Step 2: POST guest login
   const bodyParams: Record<string, string> = {
@@ -211,6 +230,7 @@ function parseGrid(html: string, venue: Venue): void {
         id: `kaunopadelis-${courtName.replace(/\s+/g, '-').toLowerCase()}`,
         name: courtName,
         type: 'doubles',
+        indoor: true,
         slots,
       })
     }
